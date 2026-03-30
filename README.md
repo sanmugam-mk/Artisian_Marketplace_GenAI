@@ -1,84 +1,144 @@
-# GenAI Artisan Product Generator
+# Artisans Marketplace GenAI Backend
 
-## 🚀 Overview
+## Overview
 
-This project is a Generative AI-powered system that helps artisans and small sellers automatically generate:
+This project is a backend system that generates structured marketplace content for handicraft products using a GenAI model (Groq LLM). It uses FastAPI for APIs and PostgreSQL for storing and caching generated results.
 
-* Product descriptions
-* Detailed product information
-* Pricing suggestions
-
-based on simple inputs like product type, material, craft type, and region.
+The system avoids repeated LLM calls by storing previously generated outputs in the database.
 
 ---
 
-## 🎯 Problem Statement
+## Features
 
-Artisans often lack the time and expertise to write compelling product descriptions or decide optimal pricing. This system automates content generation and improves consistency using AI.
-
----
-
-## 🤖 Why Generative AI?
-
-This system uses a Large Language Model (LLM) to dynamically generate content. Unlike rule-based systems, the outputs are context-aware and generated in real time.
+* Generate product description, details, and pricing using LLM
+* Store generated results in PostgreSQL
+* Cache results to avoid recomputation
+* Clean FastAPI-based API endpoints
 
 ---
 
-## ⚙️ Tech Stack
+## Tech Stack
 
-* **Backend:** FastAPI
-* **LLM:** Groq API
-* **Language:** Python
-* **API Testing:** Swagger UI (built-in FastAPI docs)
-
----
-
-## 🧱 System Architecture
-
-1. User inputs product details (product, material, craft_type, region)
-2. FastAPI processes the request
-3. Structured prompts are sent to the Groq LLM
-4. LLM generates:
-
-   * Description
-   * Details
-   * Pricing
-5. Results are returned via API
+* FastAPI (Backend framework)
+* PostgreSQL (Database)
+* SQLAlchemy (ORM)
+* Groq LLM (GenAI)
+* Python
 
 ---
 
-## 📌 API Endpoints
-
-### POST /desc
-
-Generates product description
-
-### POST /details
-
-Generates detailed product insights
-
-### POST /pricing
-
-Generates pricing suggestions
-
----
-
-## Run the server
+## Project Structure
 
 ```
-inside the virtual environment,
+backend/
+│
+├── main.py              # Main FastAPI app
+├── database.py          # DB connection setup
+├── database_models.py   # Table schema
+├── models.py            # Request models
+├── desc.py              # Description generation
+├── details.py           # Details generation
+├── pricing.py           # Pricing generation
+├── prompt.py            # Prompt templates
+├── config.py            # Config (API keys etc.)
+└── test.py              # Testing (optional)
+```
+
+---
+
+## Setup Instructions
+
+### 1. Clone the repository
+
+```
+git clone <your-repo-link>
+cd codechef_AI
+```
+
+### 2. Create virtual environment
+
+```
+python -m venv venv
+venv\Scripts\activate   # Windows
+```
+
+### 3. Install dependencies
+
+```
+pip install -r requirements.txt
+```
+
+---
+
+## Database Setup (PostgreSQL)
+
+1. Open pgAdmin
+2. Create a database:
+
+```
+artisan_ai_db
+```
+
+3. Add `.env` file in root folder:
+
+```
+DATABASE_URL=postgresql://username:password@localhost:5432/artisan_ai_db
+```
+
+---
+
+## Run the Server
+
+```
 cd backend
 uvicorn main:app --reload
 ```
 
----
+Open:
 
-## 🔥 Features
-
-* Modular API design
-* Real-time AI-generated content
-* Structured input handling
-* Interactive API testing via Swagger
+```
+http://127.0.0.1:8000/docs
+```
 
 ---
 
+## API Endpoint
+
+### POST /generate
+
+#### Request Body
+
+```
+{
+  "product": "saree",
+  "material": "silk",
+  "craft_type": "handloom weaving",
+  "region": "kancheepuram"
+}
+```
+
+#### Response
+
+```
+{
+  "source": "llm" or "cache",
+  "data": {
+    "description": {...},
+    "details": {...},
+    "pricing": {...}
+  }
+}
+```
+
+---
+
+## How It Works
+
+1. User sends product input
+2. Backend checks database for existing result
+3. If found → return cached result
+4. If not → call LLM
+5. Store in PostgreSQL
+6. Return structured response
+
+---

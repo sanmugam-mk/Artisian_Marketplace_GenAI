@@ -4,6 +4,7 @@ from pydantic import BaseModel
 class CatalogRequest(BaseModel):
     product: str
     material: str
+    craft_type: str
     region: str
 
 

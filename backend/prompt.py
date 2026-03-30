@@ -1,46 +1,77 @@
-def description_prompt(product, material, region):
-    return f"""You are an expert Indian handicraft cataloger.
+def description_prompt(product, material, craft_type, region):
+    return f"""
+You are an e-commerce product listing generator.
 
-Product: {product}
-Material: {material}
-Region: {region}
+Generate a SHORT and CRISP product description.
 
-Return ONLY a valid JSON object, no extra text, no markdown, no code blocks:
-{{
-  "title": "short catchy marketplace title",
-  "description": "2-3 lines describing the product and its cultural value",
-  "category": "main craft category (e.g. Pottery, Textiles, Woodwork, Jewelry)",
-  "tags": ["tag1", "tag2", "tag3", "tag4"]
-}}"""
-
-
-def details_prompt(artisan, craft, region):
-    return f"""You are a cultural storyteller for Indian artisans.
-
-Artisan: {artisan}
-Craft: {craft}
-Region: {region}
-
-Return ONLY a valid JSON object, no extra text, no markdown, no code blocks:
-{{
-  "story": "3-4 lines that are emotional, culturally rich, and connect the buyer to the artisan heritage and tradition"
-}}"""
-
-
-def pricing_prompt(product, material, craft_type, region):
-    return f"""You are a pricing expert for Indian handmade marketplace products.
-
+Input:
 Product: {product}
 Material: {material}
 Craft Type: {craft_type}
 Region: {region}
 
-Consider raw material cost, artisan labor, regional craft rarity, and fair trade pricing.
+Rules:
+- Max 2 lines
+- No storytelling
+- No cultural essays
+- Keep it marketplace-ready
+- Use simple, clean English
 
-Return ONLY a valid JSON object, no extra text, no markdown, no code blocks:
+Return ONLY valid JSON:
+
 {{
-  "min_price": 500,
-  "max_price": 1500,
-  "recommended_price": 999,
-  "reasoning": "2 lines explaining why this price range is fair and competitive"
-}}"""
+  "title": "max 6 words product title",
+  "description": "2 short lines only",
+  "category": "single word category",
+  "tags": ["3-4 short keywords"]
+}}
+"""
+
+def details_prompt(product, craft_type, region):
+    return f"""
+You are generating product specifications for an online marketplace.
+
+Input:
+Product: {product}
+Craft Type: {craft_type}
+Region: {region}
+
+Rules:
+- No storytelling
+- Use bullet-style short points
+- Keep each point under 10 words
+
+Return ONLY valid JSON:
+
+{{
+  "details": [
+    "Point 1",
+    "Point 2",
+    "Point 3",
+    "Point 4"
+  ]
+}}
+"""
+
+def pricing_prompt(product, material, craft_type, region):
+    return f"""
+You are a pricing assistant for handcrafted products.
+
+Input:
+Product: {product}
+Material: {material}
+Craft Type: {craft_type}
+Region: {region}
+
+Rules:
+- Give realistic price range
+- No long explanation
+- Keep it short
+
+Return ONLY valid JSON:
+
+{{
+  "price_range": "₹XXXX - ₹XXXX",
+  "pricing_note": "1 short line justification"
+}}
+"""
