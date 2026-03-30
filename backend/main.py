@@ -20,6 +20,9 @@ from database_models import ProductContent
 from database import Base
 Base.metadata.create_all(bind=engine)
 
+# This get_db func is used to create a new database session for each request & 
+# closes it automatically after the request is done.
+# This helps us to avoid manually creating new db session and close it every time.
 def get_db():
     db = SessionLocal()
     try:
@@ -27,13 +30,11 @@ def get_db():
     finally:
         db.close()
 
-# MAIN API with DEBUG + ERROR HANDLING
+# Routes
 @app.post("/generate")
 def generate_all(data: CatalogRequest, db: Session = Depends(get_db)):
     try:
-        print("INPUT RECEIVED:", data)
-
-        # 🔹 STEP 1: Check cache
+        # Check cache
         existing = db.query(ProductContent).filter_by(
             product=data.product,
             material=data.material,
@@ -41,6 +42,7 @@ def generate_all(data: CatalogRequest, db: Session = Depends(get_db)):
             region=data.region
         ).first()
 
+        # If found, return cached data
         if existing:
             print("CACHE HIT")
             return {
@@ -50,9 +52,7 @@ def generate_all(data: CatalogRequest, db: Session = Depends(get_db)):
                 "pricing": existing.pricing
             }
 
-        print("CACHE MISS → calling LLM")
-
-        # 🔹 STEP 2: Generate from LLM
+        # If not, Generate from LLM
         desc = gen_desc(data.product, data.material, data.region)
         print("DESC:", desc)
 
@@ -62,11 +62,11 @@ def generate_all(data: CatalogRequest, db: Session = Depends(get_db)):
         pricing = gen_pricing(data.product, data.material, data.craft_type, data.region)
         print("PRICING:", pricing)
 
-        #  Safety check (VERY IMPORTANT)
+        #  If any module returns empty content, then raise error
         if not desc or not details or not pricing:
             raise ValueError("LLM returned empty response")
 
-        #  STEP 3: Store in DB
+        # Store the generated content in DB
         new_record = ProductContent(
             product=data.product,
             material=data.material,
@@ -81,8 +81,6 @@ def generate_all(data: CatalogRequest, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_record)
 
-        print("SAVED TO DB")
-
         return {
             "source": "llm",
             "description": desc,
@@ -96,7 +94,6 @@ def generate_all(data: CatalogRequest, db: Session = Depends(get_db)):
             "error": str(e)
         }
 
-#Routes
 @app.get("/")
 def root():
     return {"message": "Artisans Marketplace AI API is running"}
@@ -105,7 +102,7 @@ def root():
 @app.get("/previous_data")
 def get_previous_data(db: Session = Depends(get_db)):
     data = db.query(ProductContent).all()
-    return {"data": data}
+    return {"History of datas": data}
 
 @app.post("/catalog")
 def catalog(request: CatalogRequest):
